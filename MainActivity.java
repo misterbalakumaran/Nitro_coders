@@ -1,155 +1,87 @@
-package com.example.admin.tabbedactivity;
 
-import android.icu.util.VersionInfo;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+
+package com.example.saravanan.conductor;
+
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
-
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
+EditText id,pass;
+Button bt;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //  setContentView(R.layout.login);setContentView(R.layout.signup);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-//        Button bt=findViewById(R.id.Mobile_l);
-//        Button bt1=findViewById(R.id.Mobile_s);
-       mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        id=findViewById(R.id.loginid);
+        pass=findViewById(R.id.loginpass);
+        bt=findViewById(R.id.bt);
+final String url="http://192.168.43.83/php/logemp.php";
+        bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String mob1,pass1;
+                mob1=id.getText().toString().trim();
+                pass1=pass.getText().toString().trim();
+                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
-
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String ServerResponse) {
+                                Intent intent=new Intent(MainActivity.this,Balance.class);
+                                startActivity(intent);
 
 
-}
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
 
+                                // Hiding the progress dialog after all task complete.
+                                //progressDialog.dismiss();
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    class SectionsPagerAdapter extends FragmentPagerAdapter {
-int temp;
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+                                // Showing error message if something goes wrong.
+                                Toast.makeText(MainActivity.this, volleyError.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams() {
 
-        @Override
-        public Fragment getItem(int position) {
-int temp;
-if(position==0)
-{
-    temp=position;
-}
-else
-{
-    position=1;
-    temp=position;
-}
-                switch (temp) {
+                        // Creating Map String Params.
+                        Map<String, String> params = new HashMap<String, String>();
 
-                    case 0:
+                        // Adding All values to Params.
+                        // The firs argument should be same sa your MySQL database table columns.
+                        params.put("Mobile", mob1);
+                        params.put("Password", pass1);
 
-                        login tab1 = new login();
-                      //  temp=tab1.getId();
-                        return tab1;
+                        return params;
+                    }
 
-                    case 1:
-                        signup tab2 = new signup();
-                    //   temp=tab2.getId();
-                        return tab2;
-                    default:
-                        return null;
-                }
+                };
+                requestQueue.add(stringRequest);
 
-
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-        @Override
-        public CharSequence getPageTitle(int position){
-            switch (position){
-                case 0:
-                    return "login";
-                case 1:
-                    return "signup";
+                // MySingleton.getmInstance(getActivity()).addrequest(stringRequest);
 
             }
-        return  null;
-        }
-
-
+        });
+            }
+        //});
     }
-//    }
-
 
